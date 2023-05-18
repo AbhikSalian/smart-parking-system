@@ -1,0 +1,126 @@
+#define BLYNK_TEMPLATE_ID "TMPL386SxC3f0"
+#define BLYNK_TEMPLATE_NAME "Smart Parking System"
+#define BLYNK_AUTH_TOKEN "NOn7CyK8__bsp0qogW1mCat4Yp9Hn2ij"
+#define BLYNK_PRINT Serial
+#include<ESP8266WiFi.h>
+#include<BlynkSimpleEsp8266.h>
+
+#include <Servo.h>
+#define ir1 16 
+#define ir2 05
+#define ir3 04
+#define led1 14
+#define led2 12
+#define led3 13
+#define entry_ir 9
+#define exit_ir 10
+char auth[]=BLYNK_AUTH_TOKEN;
+char ssid[] = "IOP";
+char pass[] = "IoP@#$234";
+BlynkTimer timer;
+ Servo s1,s2;  
+ boolean sensor1,sensor2,sensor3,entry,exit1;
+ boolean s1_occupied=false;
+ boolean s2_occupied=false;
+ boolean s3_occupied=false;
+ boolean entry_occupied=false;
+ boolean exit_occupied=false;
+ int count=0;
+ void setup()  
+ {   
+   Serial.begin(9600);
+   pinMode(ir1,INPUT);
+   pinMode(ir2,INPUT);
+   pinMode(ir3,INPUT);
+   pinMode(led1,OUTPUT);
+   pinMode(led2,OUTPUT);
+   pinMode(led3,OUTPUT);
+   pinMode(entry_ir,INPUT);
+   pinMode(exit_ir,INPUT);
+  s1.attach(0);
+  s2.attach(2);
+  Blynk.begin(auth, ssid, pass);
+  timer.setInterval(500L, mySensor);
+ }  
+ void loop()
+{
+  Blynk.run();
+  timer.run();
+} 
+ void mySensor()   
+ {
+   sensor1=!digitalRead(ir1);
+   sensor2=!digitalRead(ir2);
+   sensor3=!digitalRead(ir3);
+   entry=!digitalRead(entry_ir);
+   exit1=!digitalRead(exit_ir);
+  if(entry==1 && entry_occupied==false)
+  {
+    count++;
+    delay(1000);
+    s1.write(180);
+    entry_occupied=true;
+  }
+  if(entry==0 && entry_occupied==true)
+  {
+    delay(1000);
+    s1.write(0);
+    entry_occupied=false;
+  }
+  if(sensor1==1 && s1_occupied==false)
+  {
+    digitalWrite(led1,LOW);
+   Blynk.virtualWrite(V2,1);
+   Serial.println("Occupied1");
+   s1_occupied=true;
+  }
+   if (sensor1==0 && s1_occupied==true)
+  {
+    digitalWrite(led1,HIGH);
+    Blynk.virtualWrite(V2,0);
+    Serial.println("Available1");
+    s1_occupied=false;
+  }
+   if (sensor2==1 && s2_occupied==false)
+  {
+    digitalWrite(led2,LOW);
+    Blynk.virtualWrite(V3,1);
+   Serial.println("Occupied2");
+   s2_occupied=true;
+  }
+  if (sensor2==0 && s2_occupied==true)
+  {
+    digitalWrite(led2,HIGH);
+    Blynk.virtualWrite(V3,0);
+    Serial.println("Available2");
+    s2_occupied=false;
+  }
+  if (sensor3==1 && s3_occupied==false)
+  {
+    digitalWrite(led3,LOW);
+    Blynk.virtualWrite(V4,1);
+   Serial.println("Occupied3");
+   s3_occupied=true;
+  }
+  if (sensor3==0 && s3_occupied==true)
+  {
+    digitalWrite(led3,HIGH);
+    Blynk.virtualWrite(V4,0);
+    Serial.println("Available3");
+    s3_occupied=false;
+  }
+  if(exit1==1 && exit_occupied==false)
+  {
+    count--;
+    delay(1000);
+    s2.write(180);
+    exit_occupied=true;
+  }
+  if(exit1==0 && exit_occupied==true)
+  {
+    delay(1000);
+    s1.write(0);
+    exit_occupied=false;
+  }
+  Blynk.virtualWrite(V5,count);
+ }  
