@@ -1,3 +1,4 @@
+
 #define BLYNK_TEMPLATE_ID "TMPL386SxC3f0"
 #define BLYNK_TEMPLATE_NAME "Smart Parking System"
 #define BLYNK_AUTH_TOKEN "NOn7CyK8__bsp0qogW1mCat4Yp9Hn2ij"
@@ -6,17 +7,17 @@
 #include<BlynkSimpleEsp8266.h>
 
 #include <Servo.h>
-#define ir1 16 
-#define ir2 05
-#define ir3 04
-#define led1 14
-#define led2 12
-#define led3 13
-#define entry_ir 9
-#define exit_ir 10
+#define ir1 16 //D0
+#define ir2 05  //D1
+#define ir3 04  //D2
+#define led1 14  //D5
+#define led2 12  //D6
+#define led3 13  //D7
+#define entry_ir 15 //D8
+#define exit_ir 10  //SD3
 char auth[]=BLYNK_AUTH_TOKEN;
-char ssid[] = "IOP";
-char pass[] = "IoP@#$234";
+char ssid[] = "vivo 1938";
+char pass[] = "abhiksaliann";
 BlynkTimer timer;
  Servo s1,s2;  
  boolean sensor1,sensor2,sensor3,entry,exit1;
@@ -37,8 +38,8 @@ BlynkTimer timer;
    pinMode(led3,OUTPUT);
    pinMode(entry_ir,INPUT);
    pinMode(exit_ir,INPUT);
-  s1.attach(0);
-  s2.attach(2);
+  s1.attach(0);  //D3
+  s2.attach(2);  //D4
   Blynk.begin(auth, ssid, pass);
   timer.setInterval(500L, mySensor);
  }  
@@ -56,15 +57,25 @@ BlynkTimer timer;
    exit1=!digitalRead(exit_ir);
   if(entry==1 && entry_occupied==false)
   {
+     Blynk.virtualWrite(V0,1);
     count++;
+
     delay(1000);
-    s1.write(180);
+    if(count>3)
+    {
+      count=3;
+    }
+    else
+    {
+    s1.write(0);
+    }
     entry_occupied=true;
   }
   if(entry==0 && entry_occupied==true)
   {
-    delay(1000);
-    s1.write(0);
+     Blynk.virtualWrite(V0,0);
+    delay(2000);
+    s1.write(90);
     entry_occupied=false;
   }
   if(sensor1==1 && s1_occupied==false)
@@ -111,15 +122,26 @@ BlynkTimer timer;
   }
   if(exit1==1 && exit_occupied==false)
   {
+    Blynk.virtualWrite(V1,1);
     count--;
     delay(1000);
-    s2.write(180);
+    if(count<=0)
+    {
+      count=0;
+      s2.write(0);
+    }
+    else
+    {
+    
+    s2.write(0);
+    }
     exit_occupied=true;
   }
   if(exit1==0 && exit_occupied==true)
   {
-    delay(1000);
-    s1.write(0);
+     Blynk.virtualWrite(V1,0);
+    delay(2000);
+    s2.write(90);
     exit_occupied=false;
   }
   Blynk.virtualWrite(V5,count);
